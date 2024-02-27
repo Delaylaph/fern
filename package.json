@@ -1,0 +1,10 @@
+{
+  "type": "module",
+  "dependencies": {
+    "prompts": "^2.4.2",
+    "zx": "^7.2.3"
+  },
+  "devDependencies": {
+    "@types/prompts": "^2.4.9"
+  }
+}

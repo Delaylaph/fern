@@ -1,0 +1,36 @@
+{
+    "fern_foler_path": "L:/Dev/fern",
+    "projects_folder_path" : "L:/Dev",
+    "apps" : [
+        {
+            "title": "Frontend landing",
+            "value": "frontend-landing",
+            "vars": {
+                "folder_name_sufix": "-site"
+            },
+            "execute": [
+
+            ]
+        },
+        {
+            "title": "Frontend app",
+            "value": "frontend-app",
+            "vars": {
+                "folder_name_sufix" : "-app-front"
+            },   
+            "execute": [
+
+            ]
+        },
+        {
+            "title": "Backend app",
+            "value": "backend-app",
+            "vars": {
+                "folder_name_sufix" : "-app-back"
+            }, 
+            "execute": [
+
+            ]
+        }
+    ]
+}

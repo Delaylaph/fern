@@ -1,0 +1,9 @@
+version: "3.3"
+
+#${apps}
+
+networks:
+  default:
+    name: proxynet
+    external: true
+      
