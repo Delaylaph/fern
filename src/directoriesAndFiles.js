@@ -1,14 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import { alert, success, rError } from './alerts.js';
-import { FERN_CONFIG } from './config.js'
-
-const fernPath = FERN_CONFIG.fern_foler_path.replace(/^\.*\/|\/?[^\/]+\.[a-z]+|\/$/g, '');
-const projectsFolderPath = FERN_CONFIG.projects_folder_path.replace(/^\.*\/|\/?[^\/]+\.[a-z]+|\/$/g, '');
+import { fernPath, projectsFolderPath  } from './config.js'
 
 export function createDirectories(directoryPath) {
   
-    directoryPath = directoryPath.replace(/^\.*\/|\/?[^\/]+\.[a-z]+|\/$/g, '');  // Remove leading directory markers, and remove ending /file-name.extension
+    directoryPath = directoryPath.replace(/^\.*\/|\/?[^\/]+\.[a-z]+|\/$/g, ''); // Remove leading directory markers, and remove ending /file-name.extension
     const resultPath = projectsFolderPath + '/' + directoryPath;
 
     if (!fs.existsSync(resultPath)){
