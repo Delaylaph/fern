@@ -1,9 +1,11 @@
 import 'zx/core';
-import { $ } from "zx";
 import prompts from 'prompts';
-import { alert, rError } from "./alerts.js";
+import { alert } from "./alerts.js";
 import { FERN_CONFIG } from './config.js'
-import { createDirectories, checkFileExist, createDockerComposeFileInAppDirectory } from "./directoriesAndFiles.js";
+import { createDirectoryRecursive, checkFileExist, createDockerComposeFileInAppDirectory, createDockerComposeFileForProject } from "./directoriesAndFiles.js";
+import { projectsFolderPath } from './config.js'
+import { executeAction } from './actions.js'
+import { getAppFullPath, getCurrentAppComposeFileFullPath, getTemplateComposeFileFullPath } from './pathResolver.js'
 
 const args = process.argv.slice(2);
 
@@ -55,38 +57,71 @@ let response = {};
     async function createApp() {
         response = await prompts(crateAppQuestions);
 
+        setupAppsConfigs();
         createAppDirectories();
-        createDockerEnvironment();
-        
+        // createDockerEnvironment();
+        // await doStarterActions();
+    }
+
+    function setupAppsConfigs() {
+        FERN_CONFIG.apps = FERN_CONFIG.apps.filter((app) => {
+            if(response.appTypes.find(appType => app.value === appType) !== undefined) {
+                app.fullPath = getAppFullPath(response.appName, app.vars.folder_name_sufix);
+                app.composeFileFullPath = getCurrentAppComposeFileFullPath(response.appName, app.vars.folder_name_sufix);
+                app.templateComposeFileFullPath = getTemplateComposeFileFullPath(app.value);
+
+                return true;
+            }
+            return false;
+        });
     }
 
     function createAppDirectories() {
-        createDirectories(response.appName);
+        createDirectoryRecursive(response.appName);
 
-        response.appTypes.forEach(appType => {
-            let app = FERN_CONFIG.apps.find((app) => app.value === appType);
-            createDirectories(response.appName + '/' + response.appName + app.vars.folder_name_sufix);
+        FERN_CONFIG.apps.forEach(app => {
+            createDirectoryRecursive(response.appName + '/' + response.appName + app.vars.folder_name_sufix);
         });
     }
 
     function createDockerEnvironment() {
+
+        let composePathes = [];
+
         response.appTypes.forEach(appType => {
            
-            let templateComposeFilePath = 'configs/' + appType + '/docker-compose.yml';
+            let templateComposeFilePath = getTemplateComposeFilePath(appType);
 
             if(checkFileExist(templateComposeFilePath)) {
 
                 let app = FERN_CONFIG.apps.find((app) => app.value === appType);
-                let newComposeFilePath = response.appName + '/' + response.appName + app.vars.folder_name_sufix + '/dev_infrastructure';
+                let newComposeFilePath = getCurrentAppComposeFilePath(response.appName, app.vars.folder_name_sufix);
+                composePathes.push('./' + response.appName + app.vars.folder_name_sufix + '/dev_infrastructure/docker-compose.yml');
 
                 createDockerComposeFileInAppDirectory(templateComposeFilePath, newComposeFilePath, response.appName, app.vars);
+                
             }
             
         });
+
+        if(composePathes.length !== 0) {
+            createDockerComposeFileForProject(response.appName, composePathes);
+        }
     }
 
-    
+    async function doStarterActions() {
+        for await (const appType of response.appTypes) {
+            let app = FERN_CONFIG.apps.find((app) => app.value === appType);
+            app.path = projectsFolderPath + '/' + response.appName + '/' + response.appName + app.vars.folder_name_sufix;
 
+            if(app.actions.execute) {
+                for await (const command of app.actions.execute) {
+                    executeAction(command, app.path);
+                }
+            }
+
+        }
+    }
 })();
 
 

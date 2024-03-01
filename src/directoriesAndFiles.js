@@ -1,21 +1,24 @@
 import fs from 'fs';
 import path from 'path';
 import { alert, success, rError } from './alerts.js';
-import { fernPath, projectsFolderPath  } from './config.js'
+import { fernPath, fernAppsPath, projectsFolderPath } from './config.js'
+import { resolvePath }  from './pathResolver.js'
 
-export function createDirectories(directoryPath) {
+
+/**
+ * @param {*} directoryPath this is the path start from projects folder. Example: 'project-name/app-name/components'
+ */
+export function createDirectoryRecursive(directoryPath) {
   
-    directoryPath = directoryPath.replace(/^\.*\/|\/?[^\/]+\.[a-z]+|\/$/g, ''); // Remove leading directory markers, and remove ending /file-name.extension
-    const resultPath = projectsFolderPath + '/' + directoryPath;
+    const resultPath = resolvePath(projectsFolderPath, directoryPath);
 
     if (!fs.existsSync(resultPath)){
-        fs.mkdir(path.resolve(resultPath), { recursive: true }, error => {
-            if (error) {
-                rError(error);
-            } else {
-                success(directoryPath + ' successfully created');
-            }
-        });
+        try {
+            fs.mkdirSync(resultPath, { recursive: true });
+            success(directoryPath + ' successfully created');
+        } catch (error) {
+            rError(error);
+        }
     } else {
         alert(resultPath + " directory is exist");
     }
@@ -26,9 +29,9 @@ export function createDirectories(directoryPath) {
     try {
         fs.accessSync(resultPath, fs.constants.F_OK);
         return true;
-      } catch (err) {
+    } catch (err) {
         return false;
-      }
+    }
  }
 
  export function createFile(directoryPath, fileName, fileData) {
@@ -37,28 +40,39 @@ export function createDirectories(directoryPath) {
     const resultPath = projectsFolderPath + '/' + directoryPath;
     const filePath = path.join(resultPath, fileName);
 
-    fs.writeFile(filePath, fileData, (error) => {
-        if (error) {
-            rError('Writing file error: ' + error);
-            return;
-        }
+    try {
+        fs.writeFileSync(filePath, fileData);
         success('File ' + fileName + ' successfully created');
-    });
+    } catch(error) {
+        rError('Writing file error: ' + error);
+        return;
+    }
+ }
+
+ export function replaceFile(fromFilePath, replacedFilePath){
+
+ }
+
+
+ /**
+  * @param {string} fromPath Path from app in fern apps folder. Example: 'frontend-app/components'
+  * @param {string} toPath Path to desctination dorecctory
+  */
+ export function copyDirectoryRecursiveOrFile(fromPath, toPath){
+    fromPath = fernAppsPath + '/' + fromPath;
+    toPath = projectsFolderPath + '/' + toPath;
+    fs.cpSync(fromPath, toPath, {dereference: true, recursive: true})
  }
 
  export function createDockerComposeFileInAppDirectory(templateComposeFilePath, newComposeFilePath, appName, appVars){
 
     templateComposeFilePath = fernPath + '/' + templateComposeFilePath;
 
-    fs.readFile(templateComposeFilePath, 'utf8', (error, data) => {
-        if (error) {
-            rError('Reading file error: ' + error);
-            return;
-        }
+    try {
+        let data = fs.readFileSync(templateComposeFilePath, 'utf8');
 
-        // Регулярний вираз для пошуку змінних типу ${{variable_name}}
         const variableRegex = /\$\{\{(\w+)\}\}/g;
-
+    
         data = data.replace(/\$\{\{appName\}\}/g, appName);
         // Заміна виразів ${{variable_name}} на значення відповідних змінних
         let replacedData = data.replace(variableRegex, (match) => {
@@ -72,8 +86,37 @@ export function createDirectories(directoryPath) {
             }
         });
         
-        createDirectories(newComposeFilePath);
+        createDirectoryRecursive(newComposeFilePath);
         createFile(newComposeFilePath, 'docker-compose.yml', replacedData);
+
+    } catch(error) {
+        rError('Reading file error: ' + error);
+        return;
+    }
+
+    
+}
+
+export function createDockerComposeFileForProject(appName, composePathes) {
+
+    let resultStringComposePathes = 'include:'
+    composePathes.forEach(path => {
+        resultStringComposePathes += `\n  - path: ${path}`;
     });
+
+    let templateProjectComposeFilePath = fernPath + '/configs/docker-compose.yml';
+
+    try {
+
+        let data = fs.readFileSync(templateProjectComposeFilePath, 'utf8');
+
+        data = data.replace(/\#\$\{\{apps\}\}/g, resultStringComposePathes);
+          
+        createFile(appName, 'docker-compose.yml', data);
+
+    } catch(error) {
+        rError('Reading file error: ' + error);
+        return;
+    }
 }
 
