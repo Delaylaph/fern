@@ -6,4 +6,15 @@
 	<br>
 	<br>
 </h1>
-Fern
+Requirments: 
+ - git
+ - node.js
+
+Actions:
+	- execute
+	- merge
+	- copy
+	- replace
+	- delete
+	- create_folder
+	- create_file

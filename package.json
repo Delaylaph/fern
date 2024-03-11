@@ -1,10 +1,14 @@
 {
   "type": "module",
+  "scripts": {
+    "test": "jest"
+  },
   "dependencies": {
     "prompts": "^2.4.2",
     "zx": "^7.2.3"
   },
   "devDependencies": {
-    "@types/prompts": "^2.4.9"
+    "@types/prompts": "^2.4.9",
+    "jest": "^29.7.0"
   }
 }

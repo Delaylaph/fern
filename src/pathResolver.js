@@ -3,7 +3,6 @@ import { projectsFolderPath, fernPath } from './config.js'
 
 
 export function resolvePath(pathLeftPart, pathRightPart) {
-    pathRightPart = pathRightPart.replace(/^\.*\/|\/?[^\/]+\.[a-z]+|\/$/g, ''); // Remove leading directory markers, and remove ending /file-name.extension
     return path.join(pathLeftPart, pathRightPart);
 }
 
@@ -21,6 +20,10 @@ export function getAppComposeFileFullPath(projectName, folderNameSufix) {
 
 export function getAppDevFolderFullPath(projectName, folderNameSufix) {
     return path.join(projectsFolderPath, projectName, projectName + folderNameSufix, '/dev_infrastructure');
+}
+
+export function getTemplateAppFolderFullPath(appType) {
+    return path.join(fernPath, 'apps', appType);
 }
 
 export function getConfigAppFolderFullPath(appType) {

@@ -3,8 +3,8 @@ import prompts from 'prompts';
 import { alert } from "./alerts.js";
 import { FERN_CONFIG } from './config.js'
 import { createDirectoryRecursive, checkFileExist, createDockerComposeFileInAppDirectory, createDockerComposeFileForProject, createDirectoryRecursiveFromPojectsFolder, copyDirectoryRecursiveOrFile } from "./directoriesAndFiles.js";
-import { executeAction } from './actions.js'
-import { getProjectFullPath, getAppFullPath, getAppComposeFileFullPath, getTemplateComposeFileFullPath, getAppDevFolderFullPath, getConfigAppFolderFullPath } from './pathResolver.js'
+import { executeAction, performActions } from './actions.js'
+import { getProjectFullPath, getAppFullPath, getAppComposeFileFullPath, getTemplateComposeFileFullPath, getAppDevFolderFullPath, getConfigAppFolderFullPath, getTemplateAppFolderFullPath } from './pathResolver.js'
 
 const args = process.argv.slice(2);
 
@@ -71,10 +71,12 @@ let response = {};
         response.projectName = response.projectName.replaceAll(' ','');
         FERN_CONFIG.apps = FERN_CONFIG.apps.filter((app) => {
             if(response.appTypes.find(appType => app.value === appType) !== undefined) {
-                app.fullPath = getAppFullPath(response.projectName, app.vars.folder_name_sufix);
-                app.devFolder = getAppDevFolderFullPath(response.projectName, app.vars.folder_name_sufix);
-                app.composeFileFullPath = getAppComposeFileFullPath(response.projectName, app.vars.folder_name_sufix);
-                app.templateComposeFileFullPath = getTemplateComposeFileFullPath(app.value);
+                app.vars.projectName = response.projectName;
+                app.vars.fullPath = getAppFullPath(response.projectName, app.vars.folder_name_sufix);
+                app.vars.templateAppfullPath = getTemplateAppFolderFullPath(app.value);
+                app.vars.devFolder = getAppDevFolderFullPath(response.projectName, app.vars.folder_name_sufix);
+                app.vars.composeFileFullPath = getAppComposeFileFullPath(response.projectName, app.vars.folder_name_sufix);
+                app.vars.templateComposeFileFullPath = getTemplateComposeFileFullPath(app.value);
 
                 return true;
             }
@@ -85,17 +87,17 @@ let response = {};
     function createAppDirectories() {
         createDirectoryRecursiveFromPojectsFolder(response.projectName);
         FERN_CONFIG.apps.forEach(app => {
-            createDirectoryRecursive(app.fullPath);
+            createDirectoryRecursive(app.vars.fullPath);
         });
     }
 
     function createDockerEnvironment() {
         let composePathes = [];
         FERN_CONFIG.apps.forEach(app => {
-            if(checkFileExist(app.templateComposeFileFullPath)) {
-                composePathes.push(app.composeFileFullPath);
-                copyDirectoryRecursiveOrFile(getConfigAppFolderFullPath(app.value), app.devFolder);
-                createDockerComposeFileInAppDirectory(app.templateComposeFileFullPath, app.composeFileFullPath, response.projectName, app.vars);
+            if(checkFileExist(app.vars.templateComposeFileFullPath)) {
+                composePathes.push(app.vars.composeFileFullPath);
+                copyDirectoryRecursiveOrFile(getConfigAppFolderFullPath(app.value), app.vars.devFolder, true);
+                createDockerComposeFileInAppDirectory(app.vars.templateComposeFileFullPath, app.vars.composeFileFullPath, app.vars);
               
             }
         });
@@ -107,11 +109,7 @@ let response = {};
 
     async function doStarterActions() {
         for await (const app of FERN_CONFIG.apps) {
-            if(app.actions.execute) {
-                for await (const command of app.actions.execute) {
-                    await executeAction(command, app.fullPath, app);
-                }
-            }
+            await performActions(app.actions, app.vars);
         }
     }
 })();
