@@ -16,7 +16,7 @@ import { resolvePath,
          getAppDevFolderFullPath, 
          getDockerEnvAppFolderFullPath, 
          getTemplateAppFolderFullPath } from './pathResolver.js'
-import { rError } from './alerts.js';
+import { rError, info } from './alerts.js';
 import { readdirSync } from 'fs'
 import { projectsFolderPath } from './config.js'
 
@@ -29,7 +29,7 @@ export async function createProjectCommand(projectName) {
             type: () => projectName == undefined ? 'text' : null,
             initial: 'test-app',
             message: `What is project name?`,
-            validate: projectName => projectName.replaceAll(' ','').length > 0 ? true : 'Project name must contain at least 1 character'
+            validate: projectName => projectName.replaceAll(' ','').length > 0 ? true : 'Project name must contain at least 1 character.'
         },
         {
             name: 'appKeys',
@@ -49,17 +49,16 @@ export async function createProjectCommand(projectName) {
     ];
     response = await prompts(crateProjectQuestions);
     createProject();
-
 }
 
 export async function releaseFeatureCommand(AppOrProjectNameOrFeatureName, featureName) {
     if(featureName !== undefined) {
         if(!isAppName(AppOrProjectNameOrFeatureName)) {
-            rError(AppOrProjectNameOrFeatureName +' app is not exist');
+            rError(AppOrProjectNameOrFeatureName +' app is not exist.');
             return;
         }
         if(!isFeatureNameOrKey(featureName, AppOrProjectNameOrFeatureName)) {
-            rError(featureName + ' feature is not exist');
+            rError(featureName + ' feature is not exist.');
             return;
         }
         releaseAppFeatures(getProjectNameByAppName(AppOrProjectNameOrFeatureName), getAppKeyByAppName(AppOrProjectNameOrFeatureName), featureName);
@@ -88,7 +87,7 @@ export async function releaseFeatureCommand(AppOrProjectNameOrFeatureName, featu
                     if(prev != undefined) {
                         if(!isProjectName(prev)) {
                             wrongChoice = true;
-                            rError(prev + ' is not a project name');
+                            rError(prev + ' is not a project name.');
                             return null;
                         }
                         return 'select';
@@ -97,7 +96,7 @@ export async function releaseFeatureCommand(AppOrProjectNameOrFeatureName, featu
                     }
                     return null;
                 },
-                message: `In which application in this project you need to add a feature`,
+                message: `In which application in this project you need to add a feature.`,
                 choices: (prev) => {
                     return getProjectApps(prev != undefined ? prev : AppOrProjectNameOrFeatureName);
                 },
@@ -110,7 +109,7 @@ export async function releaseFeatureCommand(AppOrProjectNameOrFeatureName, featu
                     if(prev != undefined) {
                         if(!isAppKey(prev)) {
                             wrongChoice = true;
-                            rError(prev + ' is not a application name');
+                            rError(prev + ' is not a application name.');
                             return null;
                         }
                         return 'multiselect';
@@ -143,21 +142,38 @@ export async function releaseFeatureCommand(AppOrProjectNameOrFeatureName, featu
         let appPath = getAppPath();
 
         if(appPath !== null) {
-            if(!isFeatureNameOrKey(AppOrProjectNameOrFeatureName, getAppNameFromPath(appPath))) {
+            if(!isFeatureNameOrKey(AppOrProjectNameOrFeatureName, getLastFolderFromPath(appPath))) {
                 rError(AppOrProjectNameOrFeatureName + ' is not a project or an app, or a feature.');
                 return;
             }
-            let appName = getAppNameFromPath(appPath);
+            let appName = getLastFolderFromPath(appPath);
             releaseAppFeatures(getProjectNameByAppName(appName), getAppKeyByAppName(appName), AppOrProjectNameOrFeatureName);
         }
 
-        rError(AppOrProjectNameOrFeatureName + ' is not a project or an app. If you wont to release feature only by it\'s name or key you need write it in an app folder');
+        rError(AppOrProjectNameOrFeatureName + ' is not a project or an app. If you wont to release feature only by it\'s name or key you need write it in an app folder.');
         return;
     }
 }
 
-export function dockerComposeCommand() {
-    
+export async function dockerComposeCommand(projectName, commandParams) {
+    if(projectName == undefined) {
+        let projectPath = process.cwd();
+        if(!isProjectName(getLastFolderFromPath(projectPath))) {
+            rError('Compose command without a project name can be executed only if your current path is a project folder.');
+            return;
+        }
+        await executeAction('docker compose up -d', projectPath);
+    } else {
+        if(!isProjectName(projectName)) {
+            rError(projectName + ' is not a project name.');
+            return;
+        }
+        if(commandParams.length === 0) {
+            await executeAction('docker compose up -d', getProjectFullPath(projectName));
+        } else {
+            await executeAction(`docker compose ${commandParams.join(' ')}`, getProjectFullPath(projectName));
+        }
+    }
 }
 
 
@@ -170,6 +186,7 @@ async function createProject() {
     if(FERN_CONFIG.useDocker) {
        await executeAction('docker compose up -d', getProjectFullPath(response.projectName));
     }
+    info('Project created');
 }
 
 
@@ -259,11 +276,12 @@ async function releaseAppFeatures(projectName, appKey, features) {
             
         }
     }
+    info('Feature(s) released');
 }
 
 function getAppPath() {
     let path =  process.cwd();
-    let appName = getAppNameFromPath(path);
+    let appName = getLastFolderFromPath(path);
 
     for (const app of FERN_CONFIG.apps) {
         if (appName.includes(app.vars.folder_name_sufix)) {
@@ -273,7 +291,7 @@ function getAppPath() {
     return null;
 }
 
-function getAppNameFromPath(path) {
+function getLastFolderFromPath(path) {
     return path.split(/[\\/]/).pop();
 }
 

@@ -1,7 +1,7 @@
 import 'zx/core';
 import prompts from 'prompts';
-import { alert } from "./alerts.js";
-import { createProjectCommand, releaseFeatureCommand } from './commands.js'
+import { alert, info } from "./alerts.js";
+import { createProjectCommand, releaseFeatureCommand, dockerComposeCommand } from './commands.js'
 
 const args = process.argv.slice(2);
 
@@ -30,7 +30,9 @@ let response = {};
         await createProjectCommand(args[1]);
     } else if(response.iWantTo === 'release') {
         await releaseFeatureCommand(args[1], args[2]);
-    } else {
+    } else if(response.iWantTo === 'compose') {
+        await dockerComposeCommand(args[1], args.slice(2));
+    }  else {
         alert(response.iWantTo + ' is unknown command');
     }
 })();
