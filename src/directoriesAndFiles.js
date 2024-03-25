@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { alert, success, rError } from './alerts.js';
-import { fernAppsPath, projectsFolderPath } from './config.js'
-import { resolvePath, getTemplateProjectComposeFileFullPath, getProjectComposeFileFullPath }  from './pathResolver.js'
+import { fernPath, fernAppsPath, projectsFolderPath } from './config.js'
+import { resolvePath, getDockerEnvAppFolderFullPath, getTemplateProjectComposeFileFullPath, getProjectComposeFileFullPath }  from './pathResolver.js'
 import { replaceUserVariables } from './actions.js'
 
 
@@ -18,32 +18,33 @@ export function createDirectoryRecursiveFromPojectsFolder(directoryPath) {
     if (!fs.existsSync(fullPath)){
         try {
             fs.mkdirSync(fullPath, { recursive: true });
-            success(fullPath + ' successfully created');
         } catch (error) {
             rError(error);
         }
+        return true;
     } else {
         alert(fullPath + " directory is exist");
     }
+    return false;
  }
  
- export function checkFileExist(fullPath) {
+ export function checkFileOrFolderExist(fullPath) {
     try {
         fs.accessSync(fullPath, fs.constants.F_OK);
-        return true;
     } catch (err) {
         return false;
     }
+    return true;
  }
 
  export function createFile(fileFullPath, fileData) {
     try {
         fs.writeFileSync(fileFullPath, fileData);
-        success('File ' + fileFullPath + ' successfully created');
     } catch(error) {
         rError('Writing file error: ' + error);
-        return;
+        return false;
     }
+    return true;
  }
 
 export function copyDirectoryRecursiveOrFile(fromPath, toPath, replace){
@@ -53,9 +54,10 @@ export function copyDirectoryRecursiveOrFile(fromPath, toPath, replace){
         } else {
             fs.cpSync(fromPath, toPath, {dereference: true, recursive: true, errorOnExist: true, force: false });
         }
+        return true;
     } catch(error) {
         rError('Copy error: ' + error);
-        return;
+        return false;
     }
 }
 
@@ -64,9 +66,9 @@ export function deleteDirectoryRecursiveOrFile(fullPath) {
         fs.rmSync(fullPath, { recursive: true });
     } catch(error) {
         rError('Deleting error: ' + error);
-        return;
+        return false;
     }
-    
+    return true;
 }
 
  export function createDockerComposeFileInAppDirectory(templateComposeFilePath, newComposeFilePath, appVars){

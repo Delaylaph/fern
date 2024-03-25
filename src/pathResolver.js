@@ -22,15 +22,15 @@ export function getAppDevFolderFullPath(projectName, folderNameSufix) {
     return path.join(projectsFolderPath, projectName, projectName + folderNameSufix, '/dev_infrastructure');
 }
 
-export function getTemplateAppFolderFullPath(appType) {
-    return path.join(fernPath, 'apps', appType);
+export function getTemplateAppFolderFullPath(appKey) {
+    return path.join(fernPath, 'apps', appKey);
 }
 
-export function getConfigAppFolderFullPath(appType) {
-    return path.join(fernPath, 'configs', appType);
+export function getDockerEnvAppFolderFullPath(appKey) {
+    return path.join(fernPath, 'docker-env', appKey);
 }
-export function getTemplateComposeFileFullPath(appType) {
-    return path.join(fernPath, 'configs', appType, 'docker-compose.yml');
+export function getTemplateComposeFileFullPath(appKey) {
+    return path.join(fernPath, 'docker-env', appKey, 'docker-compose.yml');
 }
 
 export function getProjectComposeFileFullPath(projectName) {
@@ -38,5 +38,5 @@ export function getProjectComposeFileFullPath(projectName) {
 }
 
 export function getTemplateProjectComposeFileFullPath() {
-    return path.join(fernPath, 'configs/docker-compose.yml');
+    return path.join(fernPath, 'docker-env/docker-compose.yml');
 }

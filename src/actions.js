@@ -1,39 +1,39 @@
 import { spawnSync } from 'child_process';
 import { createFile, deleteDirectoryRecursiveOrFile, copyDirectoryRecursiveOrFile, createDirectoryRecursive } from './directoriesAndFiles.js';
 import { resolvePath } from './pathResolver.js';
-import { success } from './alerts.js';
+import { rError, success } from './alerts.js';
 
 export async function performActions(actions, appVars) {
-    // if(actions.execute) {
-    //     for await (const command of actions.execute) {
-    //         await executeAction(command, appVars.fullPath, appVars);
-    //     }
-    // }
-    // if(actions.merge) {
-    //     for (const filePathFrom in actions.merge) {
-    //         mergeFilesAction(filePathFrom, actions.merge[filePathFrom], appVars);
-    //     }
-    // }
-    // if(actions.copy) {
-    //     for (const filePathFrom in actions.copy) {
-    //         copyAction(filePathFrom, actions.copy[filePathFrom], appVars);
-    //     }
-    // }
-    // if(actions.replace) {
-    //     for (const filePathFrom in actions.replace) {
-    //         replaceAction(filePathFrom, actions.replace[filePathFrom], appVars);
-    //     }
-    // }
-    // if(actions.delete) {
-    //     actions.delete.forEach(deletePath => {
-    //         deleteAction(deletePath, appVars);
-    //     });
-    // }
-    // if(actions.create_folder) {
-    //     actions.create_folder.forEach(createPath => {
-    //         createFolderAction(createPath, appVars);
-    //     });
-    // }
+    if(actions.execute) {
+        for await (const command of actions.execute) {
+            await executeAction(command, appVars.fullPath, appVars);
+        }
+    }
+    if(actions.merge) {
+        for (const filePathFrom in actions.merge) {
+            mergeFilesAction(filePathFrom, actions.merge[filePathFrom], appVars);
+        }
+    }
+    if(actions.copy) {
+        for (const filePathFrom in actions.copy) {
+            copyAction(filePathFrom, actions.copy[filePathFrom], appVars);
+        }
+    }
+    if(actions.replace) {
+        for (const filePathFrom in actions.replace) {
+            replaceAction(filePathFrom, actions.replace[filePathFrom], appVars);
+        }
+    }
+    if(actions.delete) {
+        actions.delete.forEach(deletePath => {
+            deleteAction(deletePath, appVars);
+        });
+    }
+    if(actions.create_folder) {
+        actions.create_folder.forEach(createPath => {
+            createFolderAction(createPath, appVars);
+        });
+    }
     if(actions.create_file) {
         actions.create_file.forEach(createPath => {
             createFileAction(createPath, appVars);
@@ -52,9 +52,9 @@ export async function executeAction(command, workDir, appVars = null) {
     if(appVars !== null) {
         command = replaceUserVariables(command, appVars);
     }
-    execConsoleCommand(command, workDir);
-    success('"'+ command +'" successfully executed');
-
+    if(execConsoleCommand(command, workDir)) {
+        success('"'+ command +'" successfully executed');
+    }
 }
 
 /**
@@ -67,8 +67,9 @@ export async function executeAction(command, workDir, appVars = null) {
 export function copyAction(fromPath, toPath, appVars) {
     fromPath = resolvePath(appVars.templateAppfullPath, fromPath);
     toPath = resolvePath(appVars.fullPath, toPath);
-    copyDirectoryRecursiveOrFile(fromPath, toPath, false);
-    success(fromPath + ' successfully copied');
+    if(copyDirectoryRecursiveOrFile(fromPath, toPath, false)) {
+        success(fromPath + ' successfully copied');
+    }
 }
 
 /**
@@ -81,10 +82,10 @@ export function copyAction(fromPath, toPath, appVars) {
 export function replaceAction(fromPath, toPath, appVars) {
     fromPath = resolvePath(appVars.templateAppfullPath, fromPath);
     toPath = resolvePath(appVars.fullPath, toPath);
-    copyDirectoryRecursiveOrFile(fromPath, toPath, true);
-    success(fromPath + ' successfully replaced');
+    if(copyDirectoryRecursiveOrFile(fromPath, toPath, true)) {
+        success(fromPath + ' successfully replaced');
+    }
 }
-
 
 /**
  * DONE: Create folder recursive from current app folder
@@ -94,8 +95,9 @@ export function replaceAction(fromPath, toPath, appVars) {
  */
 export function createFolderAction(createPath, appVars) {
     createPath = resolvePath(appVars.fullPath, createPath);
-    createDirectoryRecursive(createPath);
-    success(createPath + ' folder successfully created');
+    if(createDirectoryRecursive(createPath)) {
+        success(createPath + ' folder successfully created');
+    }
 }
 
 
@@ -107,8 +109,9 @@ export function createFolderAction(createPath, appVars) {
  */
 export function createFileAction(createPath, appVars) {
     createPath = resolvePath(appVars.fullPath, createPath);
-    createFile(createPath, '');
-    success(createPath + ' file successfully created');
+    if(createFile(createPath, '')) {
+        success(createPath + ' file successfully created');
+    }
 }
 
 /**
@@ -124,8 +127,9 @@ export function mergeFilesAction(filePathFrom, appFilePath, appVars) {
     appFilePath = resolvePath(appVars.fullPath, appFilePath);
     filePathFrom = resolvePath(appVars.templateAppfullPath, filePathFrom);
     execConsoleCommand('git merge-file ' + appFilePath + ' ' + tempFilePath + ' ' + filePathFrom, appVars.fullPath);
-    deleteDirectoryRecursiveOrFile(tempFilePath);
-    success('Changes successfully merged in ' + appFilePath);
+    if(deleteDirectoryRecursiveOrFile(tempFilePath)) {
+        success('Changes successfully merged in ' + appFilePath);
+    }
 }
 
 /**
@@ -135,11 +139,10 @@ export function mergeFilesAction(filePathFrom, appFilePath, appVars) {
  * @param {*} appVars App environment and user variables
  */
 export function deleteAction(path, appVars) {
-    console.log(path);
     path = resolvePath(appVars.fullPath, path);
-    console.log(path);
-    deleteDirectoryRecursiveOrFile(path);
-    success(path + ' successfully deleted');
+    if(deleteDirectoryRecursiveOrFile(path)) {
+        success(path + ' successfully deleted');
+    }
 }
 
 
@@ -151,5 +154,11 @@ export function replaceUserVariables(data, appVars) {
 }
 
 function execConsoleCommand(command, workDir) {
-    spawnSync(command,[], { stdio: 'inherit', shell: true, cwd: workDir });
+    try {
+        spawnSync(command,[], { stdio: 'inherit', shell: true, cwd: workDir });
+    } catch(error) {
+        rError(error);
+        return false;
+    }
+    return true;
 }
