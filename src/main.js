@@ -1,6 +1,6 @@
 import 'zx/core';
 import prompts from 'prompts';
-import { alert, info } from "./alerts.js";
+import { alert } from "./alerts.js";
 import { createProjectCommand, releaseFeatureCommand, dockerComposeCommand } from './commands.js'
 
 const args = process.argv.slice(2);
