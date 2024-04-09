@@ -130,11 +130,42 @@ Actions describe exactly what will be done when creating an application or relea
 | ----- | :--: | ----------- |
 | execute | `array` | Execute console command in in shell. You can use the variables described in `vars`, they will be replaced by the specified values at runtime.|
 | merge | `object` | Three-way file merge using "git merge-file".|
-| copy | `object` | Copy file or dorectories. Files copy to files, and folder to folders, y can't copy file in folder and folder in file. Return error if file exist.|
-| replace | `object` | Replace file or directories. Files replaced files, and folder - folders, y can't replace file to folder and folder to file.|
+| copy | `object` | Copy file or dorectories. Files copy to files, and folder to folders, you can't copy file in folder and folder in file. Return error if file exist.|
+| replace | `object` | Replace file or directories. Files replaced files, and folder - folders, you can't replace file to folder and folder to file.|
 | delete | `array` | Delete file or folder in app directory.|
 | create_folder | `array` | Create folder recursive from current app folder. |
 | create_file | `array` | Create empty file recursive from current app folder. |
+
+Example: 
+```json
+{
+	"actions": {
+      "execute": [
+          "ls",
+          "docker run -it --rm -w /temp/dev --mount type=bind,src=${{fullPath}},dst=/temp/dev node:20.11.1 npx nuxi@latest init ./ --force"
+      ],
+      "merge": {
+        "path/to/file/with/changes.txt" : "path/to/file/that/will/be/changed.txt"
+      },
+      "copy": {
+          "nuxt.config.ts": "nuxt.config.ts"
+      },
+      "replace": {
+          "path/to/file.txt" : "path/to/file/that/will/be/replaced.txt"
+      },
+      "delete": [
+          "path/to/folder"
+          "path/to/file.txt"
+      ],
+      "create_folder": [
+          "test/folder"
+      ],
+      "create_file": [
+          "test.txt"
+      ]
+  },
+}
+```
 
 ### Fern and docker
 If you using docker fern can simplify setup your development environment. Fern uses traefik to manage the routes of all projects. For work with docker you need create `docker-compose.yml` file in the docker-env folder at the path specified in `fern_folier_path` in fern.json. Here is the minimum required version of this file:
