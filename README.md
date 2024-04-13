@@ -29,7 +29,6 @@ Fern is a console application that helps you create new projects or update exist
 
 ## Instalation
 
-### Windows
 1. Clone repo.
 ```
 $ git clone https://github.com/Delaylaph/fern.git
@@ -45,19 +44,40 @@ Example:
     "projects_folder_path" : "L:/Dev" 
 }
 ```
-3. Change path to current fern folder in __fern.bat__: This bat file executed when you write fern commands.
+Next step will be platform specific.
+
+### Windows
+
+3. Add the ability to execute fern from anywhere in the console:
+
+__Step 1:__ Change path to current fern folder in __fern.bat__: This bat file executed when you write fern commands.
 ```
 @echo off
 node here_your_path_to_fern_foler\fern\src\main.js %*
 ```
-4. Add fern to your PATH environment variable. This is required to run fern commands from anywhere in console.
+__Step 2:__ Add fern to your PATH environment variable. This is required to run fern commands from anywhere in console.
 	- Open the Settings.
 	- Under System, click on "About".
 	- Click on "Advanced system settings".
 	- Click "Environment Variables...".
 	- Click the edit to modify the existing PATH variable and add path to current fern folder (L:\Dev\fern\ for example).
+    
+### Linux / WSL
 
-Now you can execute fern commands from the console in any folder.
+3. Add the command for fern to the terminal:
+
+__Step 1:__ From home directory open .bashrc file.
+```
+sudo nano .bashrc
+```
+__Step 2:__ Add a line at the bottom of the file and change <path_to_fern_foler> to the folder path where the cloned fern repository is located.
+```
+alias fern='node <path_to_fern_foler>/src/main.js'
+```
+__Step 3:__ Reboot terminal.
+
+<br/>
+Now you can execute fern from the console / terminal in any folder.
 
 ## Setup your projects
 First of all, you need to create a folder where the apps that will be templates and the fern configuration will be stored. You can create it anywhere you want, but the path to this folder must be the same as `fern_foler_path` in fern.json. For example, I named this folder ferna (for example):
@@ -87,7 +107,7 @@ __fern-config.json__ is the main file where you specify which apps fern can crea
             },
             "features" : []
         },
-	]
+    ]
 }
 ```
 
@@ -139,31 +159,31 @@ Actions describe exactly what will be done when creating an application or relea
 Example: 
 ```json
 {
-	"actions": {
-      "execute": [
-          "ls",
-          "docker run -it --rm -w /temp/dev --mount type=bind,src=${{fullPath}},dst=/temp/dev node:20.11.1 npx nuxi@latest init ./ --force"
-      ],
-      "merge": {
+    "actions": {
+        "execute": [
+            "ls",
+            "docker run -it --rm -w /temp/dev --mount type=bind,src=${{fullPath}},dst=/temp/dev node:20.11.1 npx nuxi@latest init ./ --force"
+        ],
+        "merge": {
         "path/to/file/with/changes.txt" : "path/to/file/that/will/be/changed.txt"
-      },
-      "copy": {
-          "nuxt.config.ts": "nuxt.config.ts"
-      },
-      "replace": {
-          "path/to/file.txt" : "path/to/file/that/will/be/replaced.txt"
-      },
-      "delete": [
-          "path/to/folder"
-          "path/to/file.txt"
-      ],
-      "create_folder": [
-          "test/folder"
-      ],
-      "create_file": [
-          "test.txt"
-      ]
-  },
+        },
+        "copy": {
+            "nuxt.config.ts": "nuxt.config.ts"
+        },
+        "replace": {
+            "path/to/file.txt" : "path/to/file/that/will/be/replaced.txt"
+        },
+        "delete": [
+            "path/to/folder"
+            "path/to/file.txt"
+        ],
+        "create_folder": [
+            "test/folder"
+        ],
+        "create_file": [
+            "test.txt"
+        ]
+    },
 }
 ```
 
