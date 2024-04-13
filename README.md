@@ -55,11 +55,11 @@ __Step 1:__ Change path to current fern folder in __fern.bat__: This bat file ex
 @echo off
 node here_your_path_to_fern_foler\fern\src\main.js %*
 ```
-__Step 2:__ Add fern to your PATH environment variable. This is required to run fern commands from anywhere in console.
-	- Open the Settings.
-	- Under System, click on "About".
-	- Click on "Advanced system settings".
-	- Click "Environment Variables...".
+__Step 2:__ Add fern to your PATH environment variable. This is required to run fern commands from anywhere in console.<br/>
+	- Open the Settings.<br/>
+	- Under System, click on "About".<br/>
+	- Click on "Advanced system settings".<br/>
+	- Click "Environment Variables...".<br/>
 	- Click the edit to modify the existing PATH variable and add path to current fern folder (L:\Dev\fern\ for example).
     
 ### Linux / WSL
@@ -124,17 +124,17 @@ Here are the parameters that need to be specified for each application:
 You can describe the features that the application can have. They allow you to add functionality to already existing applications. For example: 
 ```json
 {
-	"features" : [
-		{
-			"name": "Auth",
-			"key": "auth",
-			"actions": {
-				"create_file": [
-					"test.txt"
-				]
-			}
-		}
-	]
+    "features" : [
+        {
+            "name": "Auth",
+            "key": "auth",
+            "actions": {
+                "create_file": [
+                    "test.txt"
+                ]
+            }
+        }
+    ]
 }
 ```
 | Param | Type | Description |
