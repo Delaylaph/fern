@@ -1,8 +1,7 @@
 import fs from 'fs';
-import path from 'path';
-import { alert, success, rError } from './alerts.js';
-import { fernPath, fernAppsPath, projectsFolderPath } from './config.js'
-import { resolvePath, getDockerEnvAppFolderFullPath, getTemplateProjectComposeFileFullPath, getProjectComposeFileFullPath }  from './pathResolver.js'
+import { alert, rError } from './alerts.js';
+import { projectsFolderPath } from './config.js'
+import { resolvePath, getTemplateProjectComposeFileFullPath, getProjectComposeFileFullPath }  from './pathResolver.js'
 import { replaceUserVariables } from './actions.js'
 
 

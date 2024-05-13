@@ -1,5 +1,5 @@
 import path from 'path';
-import { projectsFolderPath, fernPath } from './config.js'
+import { projectsFolderPath, fernAppsPath, fernEnvPath } from './config.js'
 
 
 export function resolvePath(pathLeftPart, pathRightPart) {
@@ -23,14 +23,14 @@ export function getAppDevFolderFullPath(projectName, folderNameSufix) {
 }
 
 export function getTemplateAppFolderFullPath(appKey) {
-    return path.join(fernPath, 'apps', appKey);
+    return path.join(fernAppsPath, appKey);
 }
 
 export function getDockerEnvAppFolderFullPath(appKey) {
-    return path.join(fernPath, 'docker-env', appKey);
+    return path.join(fernEnvPath, 'docker-env', appKey);
 }
 export function getTemplateComposeFileFullPath(appKey) {
-    return path.join(fernPath, 'docker-env', appKey, 'docker-compose.yml');
+    return path.join(fernEnvPath, 'docker-env', appKey, 'docker-compose.yml');
 }
 
 export function getProjectComposeFileFullPath(projectName) {
@@ -38,5 +38,5 @@ export function getProjectComposeFileFullPath(projectName) {
 }
 
 export function getTemplateProjectComposeFileFullPath() {
-    return path.join(fernPath, 'docker-env/docker-compose.yml');
+    return path.join(fernEnvPath, 'docker-env/docker-compose.yml');
 }

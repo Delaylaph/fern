@@ -33,22 +33,11 @@ Fern is a console application that helps you create new projects or update exist
 ```
 $ git clone https://github.com/Delaylaph/fern.git
 ```
-2. Update __fern.json__ and specify:
-- `fern_foler_path` - the path to the folder where you will be save fern config, temlate projects and features.
-- `projects_folder_path` - the path to the folder where you save all your projects. 
-
-Example:
-```json
-{
-    "fern_foler_path": "L:/Dev/ferna",
-    "projects_folder_path" : "L:/Dev" 
-}
-```
 Next step will be platform specific.
 
 ### Windows
 
-3. Add the ability to execute fern from anywhere in the console:
+2. Add the ability to execute fern from anywhere in the console:
 
 __Step 1:__ Change path to current fern folder in __fern.bat__: This bat file executed when you write fern commands.
 ```
@@ -64,7 +53,7 @@ __Step 2:__ Add fern to your PATH environment variable. This is required to run 
     
 ### Linux / WSL
 
-3. Add the command for fern to the terminal:
+2. Add the command for fern to the terminal:
 
 __Step 1:__ From home directory open .bashrc file.
 ```
@@ -80,14 +69,19 @@ __Step 3:__ Reboot terminal.
 Now you can execute fern from the console / terminal in any folder.
 
 ## Setup your projects
-First of all, you need to create a folder where the apps that will be templates and the fern configuration will be stored. You can create it anywhere you want, but the path to this folder must be the same as `fern_foler_path` in fern.json. For example, I named this folder ferna (for example):
+First of all, you need to create a folders where the apps that will be templates and the fern configuration will be stored. The folder name for template apps __MUST__ be `template_apps` and for fern config (and docker environment, if you use it) `fern_env`. All your projects created with fern will be stored at the same nesting level as fern. Your folder structure should look like this:
 ```
-ferna
-├── apps - Template apps that will be used to create new ones. Each application in this folder must be named exactly the same as the key value in fern.json.
-├── docker-env - This folder is required if you use docker for your projects. You can create folders named the same as the app keys in in fern.json where will be `docker-compose.yml` file for each app. This compose files will be automatically included in the final docker-compose.yml project file.
+fern - this repo folder.
+template_apps - Template apps that will be used to create new ones. Each application in this folder must be named exactly the same as the key value in fern-config.json.
+fern_env
+├── docker-env - This folder is required if you use docker for your projects. You can create folders named the same as the app keys in in fern-config.json where will be `docker-compose.yml` file for each app. This compose files will be automatically included in the final docker-compose.yml project file.
 │	└── docker-compose.yml - Docker compose file 
 ├── fern-config.json - Fern apps configuration file.
+my_project - your project created using fern
+my_project_2
+etc...
 ```
+Folder names are hardcoded for single reason - if i allow arbitrary names, that means you need to set those names in config files or somewhere else, becouse fern need to have pathes to apps and configs. And when I update fern, you will have to specify those paths every time after you pull a new version.
 
 ### Fern configuration
 __fern-config.json__ is the main file where you specify which apps fern can create and how. Here is a simple example:
@@ -188,7 +182,7 @@ Example:
 ```
 
 ### Fern and docker
-If you using docker fern can simplify setup your development environment. Fern uses traefik to manage the routes of all projects. For work with docker you need create `docker-compose.yml` file in the docker-env folder at the path specified in `fern_folier_path` in fern.json. Here is the minimum required version of this file:
+If you using docker fern can simplify setup your development environment. Fern uses traefik to manage the routes of all projects. For work with docker you need create `docker-compose.yml` file in the docker-env folder. Here is the minimum required version of this file:
 ```yml
 version: "3.3"
 
